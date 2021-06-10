@@ -1,29 +1,35 @@
 import React, { useEffect } from 'react';
-import logo from './logo.svg';
+import { pipe } from 'fp-ts/function';
 import './App.css';
-import * as D from 'io-ts/lib/Decoder';
+import * as D from 'io-ts/Decoder';
 
-const aCustomDecoder: D.Decoder<unknown, { name: string; health: number }> =
-  D.struct({
-    name: D.string,
-    health: D.number,
-  });
+class Person {
+  constructor(readonly name: string, readonly health: number) {}
+}
+
+export const PersonD: D.Decoder<unknown, Person> = pipe(
+  D.string,
+  D.parse((name) => D.success(new Person(name, 100))),
+);
+
 const bCustomDecoder: D.Decoder<
   unknown,
   { name: string; health: number; isAlive: boolean }
 > = D.struct({
   name: D.string,
   health: D.number,
-  isAlive: D.boolean,
+  isAlive: D.boolean, // this is undefined when io-ts is imported as io-ts/Decoder 
 });
 
 interface AppProps {}
 
 function App({}: AppProps) {
   useEffect(() => {
-    console.log(aCustomDecoder.decode({ name: 'john', health: 100 }));
+    console.log(PersonD.decode('john'));
     // uncomment this line
-    console.log(bCustomDecoder.decode({ name: 'john', health: 100, isAlive: true }));
+    // console.log(
+    //   bCustomDecoder.decode({ name: 'john', health: 100, isAlive: true }),
+    // );
   }, []);
 
   return (
